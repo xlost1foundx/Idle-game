@@ -1,0 +1,125 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="game-container">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title text-center mb-4">Resources</h5>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <p>Wood: <span id="wood" class="resource-counter">{{ current_user.resources.wood }}</span></p>
+                            <small class="text-muted">Production: <span id="wood-rate">{{ (current_user.buildings.woodcutter * (2 if current_user.is_subscribed else 1)) }}/s</span></small>
+                            <div class="mt-2">
+                                <button class="btn btn-secondary gather-btn w-100" data-resource="wood" data-clicks="0">
+                                    Chop Wood (0/10)
+                                    <div class="gather-progress" style="width: 0%"></div>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <p>Stone: <span id="stone" class="resource-counter">{{ current_user.resources.stone }}</span></p>
+                            <small class="text-muted">Production: <span id="stone-rate">{{ (current_user.buildings.quarry * (2 if current_user.is_subscribed else 1)) }}/s</span></small>
+                            <div class="mt-2">
+                                <button class="btn btn-secondary gather-btn w-100" data-resource="stone" data-clicks="0">
+                                    Mine Stone (0/10)
+                                    <div class="gather-progress" style="width: 0%"></div>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <p>Food: <span id="food" class="resource-counter">{{ current_user.resources.food }}</span></p>
+                            <small class="text-muted">Production: <span id="food-rate">{{ (current_user.buildings.farm * (2 if current_user.is_subscribed else 1)) }}/s</span></small>
+                            <div class="mt-2">
+                                <button class="btn btn-secondary gather-btn w-100" data-resource="food" data-clicks="0">
+                                    Gather Food (0/10)
+                                    <div class="gather-progress" style="width: 0%"></div>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <p>Leather: <span id="leather" class="resource-counter">{{ current_user.resources.leather }}</span></p>
+                            <div class="mt-2">
+                                <button id="hunt-btn" class="btn btn-secondary w-100 hunt-cooldown">
+                                    Hunt (1min cooldown)
+                                    <div class="cooldown-overlay" style="width: 0%"></div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Woodcutter</h5>
+                    <p>Current: <span id="woodcutter-count">{{ current_user.buildings.woodcutter }}</span></p>
+                    <p>Level: <span id="woodcutter-level">{{ current_user.buildings.woodcutter_level }}</span></p>
+                    <p>Production: {{ current_user.buildings.woodcutter * (2 if current_user.is_subscribed else 1) * (1.5 ** (current_user.buildings.woodcutter_level - 1)) }} wood/s</p>
+                    <button class="btn btn-primary build-btn mb-2" data-building="woodcutter">
+                        Build (50 wood, 30 stone)
+                    </button>
+                    <button class="btn btn-secondary upgrade-btn" data-building="woodcutter">
+                        Upgrade Level (100 wood, 60 stone)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Quarry</h5>
+                    <p>Current: <span id="quarry-count">{{ current_user.buildings.quarry }}</span></p>
+                    <p>Level: <span id="quarry-level">{{ current_user.buildings.quarry_level }}</span></p>
+                    <p>Production: {{ current_user.buildings.quarry * (2 if current_user.is_subscribed else 1) * (1.5 ** (current_user.buildings.quarry_level - 1)) }} stone/s</p>
+                    <button class="btn btn-primary build-btn mb-2" data-building="quarry">
+                        Build (30 wood, 50 stone)
+                    </button>
+                    <button class="btn btn-secondary upgrade-btn" data-building="quarry">
+                        Upgrade Level (60 wood, 100 stone)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Farm</h5>
+                    <p>Current: <span id="farm-count">{{ current_user.buildings.farm }}</span></p>
+                    <p>Level: <span id="farm-level">{{ current_user.buildings.farm_level }}</span></p>
+                    <p>Production: {{ current_user.buildings.farm * (2 if current_user.is_subscribed else 1) * (1.5 ** (current_user.buildings.farm_level - 1)) }} food/s</p>
+                    <button class="btn btn-primary build-btn mb-2" data-building="farm">
+                        Build (40 wood, 40 stone)
+                    </button>
+                    <button class="btn btn-secondary upgrade-btn" data-building="farm">
+                        Upgrade Level (80 wood, 80 stone)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if not current_user.is_subscribed %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                <h5>Subscribe Now!</h5>
+                <p>Get 2x resource production speed for only $2.99/month</p>
+                <a href="{{ url_for('subscribe') }}" class="btn btn-primary">Subscribe</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Add Tone.js for sound effects -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+<script src="{{ url_for('static', filename='js/game.js') }}"></script>
+{% endblock %}
